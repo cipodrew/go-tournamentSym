@@ -123,7 +123,9 @@ func main() {
 			fmt.Printf("\nundefeated: %v\n", undefeated)
 			if len(undefeated) > 2 {
 				_, loser := simFight(undefeated)
-				undefeated = append(undefeated[:loser], undefeated[loser+1:]...)
+
+				// delete the element from the slice
+				undefeated = append(undefeated[:loser], undefeated[loser+1:]...) //unpack the second slice to avoid creating an intermediate slice for the second part of the original slice
 				// fmt.Printf("undefeated: %v\n", undefeated)
 				fmt.Printf("len: %d\n", len(undefeated))
 			} else if len(undefeated) == 2 {
