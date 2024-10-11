@@ -77,6 +77,7 @@ func main() {
 		if err != nil {
 			panic("could not read file")
 		}
+		defer rFile.Close()
 		r := csv.NewReader(rFile)
 		var drafted []int
 		var seen bool = false
