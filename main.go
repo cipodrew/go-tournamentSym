@@ -118,19 +118,19 @@ func main() {
 		var undefeated []int = slices.Clone(drafted)
 
 		// time to fight
-		ogLen := len(drafted)
 		for {
 			time.Sleep(1 * time.Second)
 			fmt.Printf("\nundefeated: %v\n", undefeated)
-			if len(undefeated) >= 2 {
-				_, loser := simFight(undefeated, ogLen)
+			if len(undefeated) > 2 {
+				_, loser := simFight(undefeated)
 				undefeated = append(undefeated[:loser], undefeated[loser+1:]...)
 				// fmt.Printf("undefeated: %v\n", undefeated)
 				fmt.Printf("len: %d\n", len(undefeated))
 			} else if len(undefeated) == 2 {
 				fmt.Printf("\nfinal fight:\n")
-				winner, _ := simFight(undefeated, ogLen)
-				fmt.Printf("Tournament Winner: %d\n", winner)
+				winner, _ := simFight(undefeated)
+				fmt.Printf("Tournament Winner: %d\n", undefeated[winner])
+				break
 			} else {
 				break
 			}
@@ -141,22 +141,13 @@ func main() {
 	}
 }
 
-func simFight(undefeated []int, draftedlen int) (winner int, loser int) {
-	randy := rand.New(rand.NewSource(time.Now().Unix()))
-	p1 := randy.Intn(draftedlen)
+func simFight(undefeated []int) (winner int, loser int) {
+	//indexes
+	p1 := rand.Intn(len(undefeated))
+	p2 := rand.Intn(len(undefeated))
 	for {
-		// fmt.Println("oh noes")
-		if !slices.Contains(undefeated, p1) {
-			p1 = randy.Intn(draftedlen)
-		} else {
-			break
-		}
-	}
-	p2 := randy.Intn(draftedlen)
-	for {
-		// fmt.Println("oh noes")
-		if !slices.Contains(undefeated, p2) || p1 == p2 {
-			p2 = randy.Intn(draftedlen)
+		if p1 == p2 {
+			p2 = rand.Intn(len(undefeated))
 		} else {
 			break
 		}
@@ -164,14 +155,13 @@ func simFight(undefeated []int, draftedlen int) (winner int, loser int) {
 
 	winner = p1
 	loser = p2
-	if randy.Int() == 1 {
+	if rand.Int() == 1 {
 		winner = p2
 		loser = p1
 	}
 
-	fmt.Printf("%d VS %d\n", p1, p2)
-	fmt.Printf("Winner: %d\n", winner)
-	fmt.Printf("Loser: %d\n", loser)
-	slices.Index(undefeated, winner)
-	return slices.Index(undefeated, winner), slices.Index(undefeated, loser)
+	fmt.Printf("%d VS %d\n", undefeated[p1], undefeated[p2])
+	fmt.Printf("Winner: %d\n", undefeated[winner])
+	fmt.Printf("Loser: %d\n", undefeated[loser])
+	return winner, loser
 }
