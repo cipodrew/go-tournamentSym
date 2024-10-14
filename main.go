@@ -10,6 +10,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"text/tabwriter"
 	"time"
 )
 
@@ -89,6 +90,7 @@ func main() {
 			}
 			panic("could not read record")
 		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 4, 0, '\t', 0)
 		for {
 			current, err := r.Read()
 			if err != nil {
@@ -112,10 +114,19 @@ func main() {
 				}
 			}
 			drafted = append(drafted, currId)
-			fmt.Println("Partecipant: " + currName)
-			fmt.Printf("%v\n", drafted)
+			// fmt.Println("Partecipant: " + currName)
+			// fmt.Printf("\n%v\n", drafted)
+			fmt.Fprint(w, strconv.Itoa(currId)+"\t"+currName+"\t")
 		}
-		fmt.Printf("fight!\n")
+		w.Flush()
+		fmt.Println("\nPartecipants:")
+		// w := tabwriter.NewWriter(os.Stdout, 0, 8, 0, '\t', 0)
+		for i := range len(drafted) {
+			fmt.Fprint(w, strconv.Itoa(drafted[i])+"\t")
+		}
+		w.Flush()
+
+		fmt.Printf("\nfight!\n")
 		var undefeated []int = slices.Clone(drafted)
 
 		// time to fight
@@ -127,8 +138,7 @@ func main() {
 
 				// delete the element from the slice
 				undefeated = append(undefeated[:loser], undefeated[loser+1:]...) //unpack the second slice to avoid creating an intermediate slice for the second part of the original slice
-				// fmt.Printf("undefeated: %v\n", undefeated)
-				fmt.Printf("len: %d\n", len(undefeated))
+				// fmt.Printf("len: %d\n", len(undefeated))
 			} else if len(undefeated) == 2 {
 				fmt.Printf("\nfinal fight:\n")
 				winner, _ := simFight(undefeated)
