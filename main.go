@@ -31,7 +31,8 @@ func writeCSVHeader(record []string, w *csv.Writer, field1, field2 string) {
 
 // calls UNIX syscall (does not work on non-unix OS)
 func prepFile(fileName string) (*os.File, error) {
-	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	// file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return nil, fmt.Errorf("error opening file")
 	}
@@ -66,7 +67,12 @@ func main() {
 			panic("error creating file")
 		}
 
-		defer closeFile(genFile)
+		defer func() {
+			err := closeFile(genFile)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, "Error in closing the csv file")
+			}
+		}()
 		var name string
 		var read int = 1
 		id := 0
