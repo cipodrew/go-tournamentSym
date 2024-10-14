@@ -45,7 +45,11 @@ func main() {
 			panic("error creating file")
 		}
 
-		defer genFile.Close()
+		defer func(f *os.File) {
+			if err := f.Close(); err != nil {
+				log.Println(err)
+			}
+		}(genFile)
 		var name string
 		var read int = 1
 		id := 0
