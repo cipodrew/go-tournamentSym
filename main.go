@@ -10,6 +10,7 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"syscall"
 	"text/tabwriter"
 	"time"
 )
@@ -28,11 +29,31 @@ func writeCSVHeader(record []string, w *csv.Writer, field1, field2 string) {
 	w.Flush()
 }
 
+// calls UNIX syscall (does not work on non-unix OS)
+func prepFile(fileName string) (*os.File, error) {
+	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		return nil, fmt.Errorf("error opening file")
+	}
+	err = syscall.Flock(int(file.Fd()), syscall.LOCK_EX)
+	if err != nil {
+		_ = file.Close()
+		return nil, fmt.Errorf("Error in acquiring lock for file")
+	}
+	return file, nil
+}
+
+func closeFile(file *os.File) error {
+	syscall.Flock(int(file.Fd()), syscall.LOCK_UN)
+	err := file.Close()
+	return err
+}
+
 func main() {
 	flag.NewFlagSet("gen", flag.ExitOnError)
 	flag.NewFlagSet("sim", flag.ExitOnError)
 	if len(os.Args) < 2 {
-		fmt.Println("subcommand expected")
+		fmt.Fprintf(os.Stderr, "subcommand expected")
 		os.Exit(1)
 	}
 
@@ -40,12 +61,12 @@ func main() {
 	case "gen":
 		fmt.Println("generating csv")
 		var err error
-		genFile, err := os.Create(partecipantsFile)
+		genFile, err := prepFile(partecipantsFile)
 		if err != nil {
 			panic("error creating file")
 		}
 
-		defer genFile.Close()
+		defer closeFile(genFile)
 		var name string
 		var read int = 1
 		id := 0
